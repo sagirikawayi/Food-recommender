@@ -7,73 +7,7 @@ from sklearn.neighbors import NearestNeighbors
 # ==========================================
 # 0. 页面配置
 # ==========================================
-
 st.set_page_config(page_title="AI Food Recommender (Scientific Standards)", page_icon="🧠", layout="centered")
-
-# ==========================================
-# 0.5 自定义 CSS 美化
-# ==========================================
-st.markdown("""
-    <style>
-    /* 1. 全局背景与字体优化 */
-    .main {
-        background-color: #fcfcfc;
-    }
-    
-    /* 2. 标题颜色与间距 */
-    h1 {
-        color: #1E3A8A; /* 深蓝色，更具科技感 */
-        font-weight: 800;
-    }
-    .stSubheader {
-        color: #4B5563;
-    }
-
-    /* 3. 卡片式指标 (st.metric) 美化 */
-    [data-testid="stMetric"] {
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        padding: 15px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s ease-in-out;
-    }
-    [data-testid="stMetric"]:hover {
-        transform: translateY(-5px); /* 悬浮动效 */
-        border-color: #3B82F6;
-    }
-
-    /* 4. 搜索按钮美化 */
-    div.stButton > button:first-child {
-        background-color: #3B82F6;
-        color: white;
-        width: 100%;
-        border-radius: 8px;
-        height: 3em;
-        font-weight: bold;
-        border: none;
-        box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
-    }
-    div.stButton > button:first-child:hover {
-        background-color: #2563EB;
-        border: none;
-    }
-
-    /* 5. 结果容器美化 */
-    .stExpander, .stContainer {
-        border: none !important;
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 15px;
-        margin-bottom: 20px;
-    }
-
-    /* 6. 隐藏 Streamlit 默认菜单（可选，让页面更干净） */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    </style>
-    """, unsafe_allow_html=True)
-
 st.title("🧠 AI Smart Food Recommender")
 st.subheader("(FSA Traffic Light & GB 28050 Standards)")
 st.markdown("---")
