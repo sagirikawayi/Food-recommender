@@ -7,6 +7,24 @@ from sklearn.neighbors import NearestNeighbors
 # ==========================================
 # 0. 页面配置
 # ==========================================
+# 在 0. 页面配置 下方添加
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f8f9fa;
+    }
+    .stMetric {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    div[data-testid="stExpander"] {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    </style>
+    """, unsafe_allow_html=True)
 st.set_page_config(page_title="AI Food Recommender (Scientific Standards)", page_icon="🧠", layout="centered")
 st.title("🧠 AI Smart Food Recommender")
 st.subheader("(FSA Traffic Light & GB 28050 Standards)")
