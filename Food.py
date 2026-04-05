@@ -7,10 +7,51 @@ from sklearn.neighbors import NearestNeighbors
 # ==========================================
 # 0. 页面配置
 # ==========================================
-st.set_page_config(page_title="AI Food Recommender (Scientific Standards)", page_icon="🧠", layout="centered")
-st.title("🧠 AI Smart Food Recommender")
-st.subheader("(FSA Traffic Light & GB 28050 Standards)")
-st.markdown("---")
+st.set_page_config(
+    page_title="AI Food Recommender (Scientific Standards)",
+    page_icon="🧠",
+    layout="centered"
+)
+
+# ==========================================
+# 0.5 自定义 CSS 美化
+# ==========================================
+st.markdown("""
+    <style>
+    /* 修复下拉框光标变成输入状态的问题 */
+    div[data-baseweb="select"] { cursor: pointer !important; }
+    div[data-baseweb="select"] * { cursor: pointer !important; }
+    input[aria-autocomplete="list"] { caret-color: transparent !important; cursor: pointer !important; }
+
+    .stApp { background-color: #F0F2F6; }
+    [data-testid="stSidebar"] { background-color: #ffffff; border-right: 1px solid #e5e7eb; }
+    h1 { color: #1E3A8A; font-weight: 800; margin-bottom: 0px; }
+    .stSubheader { color: #4B5563; margin-top: -10px; }
+
+    /* 指标卡片美化 */
+    [data-testid="stMetric"] {
+        background-color: #ffffff; border: none; padding: 15px 20px;
+        border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
+    }
+    [data-testid="stMetric"]:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+
+    /* 按钮美化 */
+    div.stButton > button:first-child {
+        background-color: #3B82F6; color: white; width: 100%; border-radius: 10px;
+        height: 3.5em; font-weight: bold; border: none; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4); margin-top: 20px;
+    }
+
+    /* 结果容器 */
+    .stContainer { background-color: #ffffff; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+
+    /* 侧边栏 info 框美化 */
+    .stAlert { border: 1px solid #3B82F6 !important; background-color: #ffffff !important; }
+
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+    """, unsafe_allow_html=True)
 
 
 # ==========================================
@@ -23,17 +64,74 @@ def load_and_mine_data():
         cols = ['food_name', 'calories', 'protein_g', 'carbs_g', 'sugar_g', 'fat_g', 'sodium_mg']
         return df_nutri[cols].dropna().reset_index(drop=True)
     except:
-        st.error("🚨 Dataset Not Found!")
+        st.error("🚨 Dataset Not Found! Please ensure the CSV is in the root directory.")
         return pd.DataFrame()
 
 
 df = load_and_mine_data()
 if df.empty: st.stop()
 
+# ==========================================
+# 2. 侧边栏导航逻辑 (修正缩进版本)
+# ==========================================
+with st.sidebar:
+    st.title("🧭 Navigation")
+    menu_selection = st.selectbox(
+        "Choose a module:",
+        ["Main Dashboard", "AI Control Panel", "Scientific Standards"]
+    )
+    st.write("---")
+
+    if menu_selection == "AI Control Panel":
+        st.markdown("### ⚙️ AI Control Panel")
+        with st.expander("🔍 Algorithm Settings", expanded=True):
+            k_val = st.slider("Top-K Matches", 1, 8, 5)
+            show_math = st.toggle("🧪 Algorithm X-Ray Vision")
+
+        with st.expander("🏥 Data Health Status", expanded=True):
+            h_col1, h_col2 = st.columns(2)
+            with h_col1:
+                st.metric("Total Rows", len(df))
+                st.metric("Null Cells", df.isnull().sum().sum())
+            with h_col2:
+                # 这里使用简单的维度估算
+                st.metric("Dimensions", "6D")
+                st.caption("Status: Healthy ✅")
+
+        if st.button("🔄 Reset System Cache"):
+            st.cache_data.clear()
+            st.rerun()
+
+    elif menu_selection == "Scientific Standards":
+        st.markdown("### 📘 Scientific Standards")
+        st.info("""
+        This AI engine evaluates targets using:
+        - 🇬🇧 **FSA Traffic Lights**: Risk assessment.
+        - 🇨🇳 **GB 28050**: China's national standards.
+        """)
+        st.image("https://cdn-icons-png.flaticon.com/512/3034/3034833.png", width=100)
+        # 给其他页面默认值
+        k_val, show_math = 5, False
+
+    else:  # Main Dashboard 欢迎界面 (已修正缩进)
+        st.markdown("### 🏠 Welcome")
+        st.info("""
+        **AI Nutritional Navigator v2.1**
+
+        Define your ideal nutritional signature in the workspace, and let our **KNN engine** find the most scientifically aligned food profiles for you.
+
+        *Switch to **AI Control Panel** to adjust matching sensitivity.*
+        """)
+        k_val, show_math = 5, False
 
 # ==========================================
-# 2. Session State 同步逻辑
+# 3. 主界面逻辑
 # ==========================================
+st.title("🧠 AI Smart Food Recommender")
+st.subheader("Scientific Standards-Based Goal Matching")
+st.markdown("---")
+
+
 def sync_val(prefix, source):
     if source == 'slider':
         st.session_state[f'{prefix}_input'] = st.session_state[f'{prefix}_slider']
@@ -49,19 +147,14 @@ for prefix, col in nutrient_map.items():
     if f'{prefix}_input' not in st.session_state:
         st.session_state[f'{prefix}_input'] = st.session_state[f'{prefix}_slider']
 
-# ==========================================
-# 3. 前端界面：双标准动态面板
-# ==========================================
-st.subheader("📋 Step 1: Set Your Nutritional Target")
-active_features = []
-user_target_values = []
+st.markdown("### 📋 Step 1: Set Your Nutritional Target")
+active_features, user_target_values = [], []
 
 
 def render_nutrient_control(label, prefix, col_name, emoji):
     is_active = st.checkbox(f"{emoji} Use {label}", value=True, key=f"use_{prefix}")
     c1, c2 = st.columns([3, 1.2])
     min_v, max_v = int(df[col_name].min()), int(df[col_name].max())
-
     with c1:
         st.slider(label, min_v, max_v, key=f"{prefix}_slider", on_change=sync_val, args=(prefix, 'slider'),
                   disabled=not is_active, label_visibility="collapsed")
@@ -69,50 +162,42 @@ def render_nutrient_control(label, prefix, col_name, emoji):
         st.number_input(label, min_v, max_v, key=f"{prefix}_input", on_change=sync_val, args=(prefix, 'input'),
                         disabled=not is_active, label_visibility="collapsed")
 
-    # --- 科学评判标准逻辑 ---
     if is_active:
         val = st.session_state[f"{prefix}_slider"]
-
-        # A. 第二类：鼓励性成分 (蛋白质 - 中国国标 GB 28050)
+        # 标准判定逻辑
         if prefix == 'pro':
             if val >= 12.0:
-                st.success(f"💪 **High Protein** (GB 28050: ≥ 12g/100g)")
+                st.success("💪 **High Protein**")
             elif val >= 6.0:
-                st.info(f"✅ **Source of Protein** (Standard: 6g - 12g)")
+                st.info("✅ **Source of Protein**")
             else:
-                st.warning(f"⚠️ **Low Protein Content** (Below High-Pro Line)")
-
-        # B. 第一类：限制性成分 (脂肪、糖、钠 - 英国 FSA 红绿灯)
+                st.warning("⚠️ **Low Protein**")
         elif prefix == 'fat':
             if val <= 3.0:
-                st.success(f"🟢 **Low Fat** (FSA: ≤ 3.0g)")
+                st.success("🟢 **Low Fat**")
             elif val <= 17.5:
-                st.warning(f"🟡 **Medium Fat** (FSA: 3.0g - 17.5g)")
+                st.warning("🟡 **Medium Fat**")
             else:
-                st.error(f"🔴 **High Fat** (FSA: > 17.5g)")
-
+                st.error("🔴 **High Fat**")
         elif prefix == 'sugar':
             if val <= 5.0:
-                st.success(f"🟢 **Low Sugar** (FSA: ≤ 5.0g)")
+                st.success("🟢 **Low Sugar**")
             elif val <= 22.5:
-                st.warning(f"🟡 **Medium Sugar** (FSA: 5.0g - 22.5g)")
+                st.warning("🟡 **Medium Sugar**")
             else:
-                st.error(f"🔴 **High Sugar** (FSA: > 22.5g)")
-
+                st.error("🔴 **High Sugar**")
         elif prefix == 'sod':
             if val <= 120:
-                st.success(f"🟢 **Low Sodium** (FSA: ≤ 120mg)")
+                st.success("🟢 **Low Sodium**")
             elif val <= 600:
-                st.warning(f"🟡 **Medium Sodium** (FSA: 120mg - 600mg)")
+                st.warning("🟡 **Medium Sodium**")
             else:
-                st.error(f"🔴 **High Sodium** (FSA: > 600mg)")
-
+                st.error("🔴 **High Sodium**")
         active_features.append(col_name)
         user_target_values.append(val)
     st.markdown("---")
 
 
-# 依次渲染 6 个维度
 render_nutrient_control("Calories (kcal)", "cal", "calories", "⚡")
 render_nutrient_control("Protein (g)", "pro", "protein_g", "🥚")
 render_nutrient_control("Carbs (g)", "carb", "carbs_g", "🍞")
@@ -120,57 +205,35 @@ render_nutrient_control("Sugar (g)", "sugar", "sugar_g", "🍭")
 render_nutrient_control("Total Fat (g)", "fat", "fat_g", "🥑")
 render_nutrient_control("Sodium (mg)", "sod", "sodium_mg", "🧂")
 
-# 算法透视眼开关
-show_math = st.toggle("🔍 Activate 'Algorithm X-Ray Vision'")
-
-# ==========================================
-# 4. 执行 AI 搜索
-# ==========================================
 if st.button("🚀 Run AI Search", type="primary"):
     if not active_features:
         st.error("❌ Please select at least one nutrient!")
     else:
-        with st.spinner('Matching food profiles...'):
+        with st.spinner('Calculating best matches...'):
             X = df[active_features].copy()
             scaler = MinMaxScaler()
             X_scaled = scaler.fit_transform(X)
             user_target_scaled = scaler.transform([user_target_values])
-
-            k = min(5, len(df))
+            k = min(k_val, len(df))
             knn = NearestNeighbors(n_neighbors=k, metric='euclidean')
             knn.fit(X_scaled)
             distances, indices = knn.kneighbors(user_target_scaled)
 
-            st.success(f"✅ Scientific Match Results (FSA & GB 28050):")
+            st.markdown("### ✅ Scientific Match Results")
             for i in range(k):
                 orig_idx = indices[0][i]
                 row = df.iloc[orig_idx]
                 dist = distances[0][i]
                 match_score = max(0, (1 - dist) * 100)
-
                 with st.container():
-                    st.markdown(f"### 🏆 Rank {i + 1}: {row['food_name']}")
+                    st.markdown(
+                        f"<h3 style='color: {'#1E3A8A' if i == 0 else '#4B5563'};'>{'🥇' if i == 0 else '🏆'} Rank {i + 1}: {row['food_name']}</h3>",
+                        unsafe_allow_html=True)
                     cols = st.columns(3)
-
                     for idx, feat in enumerate(active_features):
-                        # 1. 标题美化：去除下划线、去除单位后缀、首字母大写
-                        clean_title = feat.replace('_g', '').replace('_mg', '').replace('_Mg', '').replace('_',
-                                                                                                           ' ').title()
-
-                        # 2. 单位动态判定
-                        if 'calories' in feat.lower():
-                            u = " kcal"
-                        elif 'sodium' in feat.lower():
-                            u = " mg"
-                        else:
-                            u = " g"
-
-                        # 3. 渲染指标
-                        cols[idx % 3].metric(clean_title, f"{row[feat]}{u}")
-
-                    # 算法透视眼逻辑保持不变...
+                        u = " kcal" if 'calories' in feat.lower() else (" mg" if 'sodium' in feat.lower() else " g")
+                        cols[idx % 3].metric(feat.replace('_', ' ').title(), f"{row[feat]}{u}")
                     if show_math:
-                        st.info(f"**Euclidean Distance:** `{dist:.4f}` | **Match Confidence:** `{match_score:.1f}%`")
+                        st.code(f"Distance: {dist:.4f} | Confidence: {match_score:.1f}%")
                     else:
                         st.progress(int(match_score))
-                    st.markdown("---")
